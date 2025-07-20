@@ -15,18 +15,28 @@ pipeline {
         stage('Set up virtualenv') {
             steps {
                 bat "python -m venv %VENV_DIR%"
-                bat ".\\%VENV_DIR%\\Scripts\\pip install --upgrade pip"
-                bat ".\\%VENV_DIR%\\Scripts\\pip install -r requirements.txt"
+                bat "%VENV_DIR%\\Scripts\\pip install --upgrade pip"
+                bat "%VENV_DIR%\\Scripts\\pip install -r requirements.txt"
             }
         }
 
         stage('Run Main Script') {
             steps {
-                bat ".\\%VENV_DIR%\\Scripts\\python main.py"
+                bat "%VENV_DIR%\\Scripts\\python main.py"
             }
         }
 
         stage('Run Tests') {
             steps {
-                bat ".\\%VENV_DIR%\\Scripts\\pip install pytest"
-                bat ".\\
+                bat "%VENV_DIR%\\Scripts\\pip install pytest"
+                bat "%VENV_DIR%\\Scripts\\pytest --junitxml=results.xml || exit 0"
+            }
+        }
+    }
+
+    post {
+        always {
+            junit 'results.xml'
+        }
+    }
+}
