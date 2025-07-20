@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+
+    environment {
+        VENV_DIR = 'venv'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/Blaszczykowske/TestMorningDraft.git'
+            }
+        }
+
+        stage('Set up virtualenv') {
+            steps {
+                // Windows uses bat, Linux/macOS uses sh
+                bat "python -m venv %VENV_DIR%"
+                bat ".\\%VENV_DIR%\\Scripts\\pip install --upgrade pip"
+                bat ".\\%VENV_DIR%\\Scripts\\pip install -r requirements.txt"
+            }
+        }
+
+        stage('Run Main Script') {
+            steps {
+                bat ".\\%VENV_DIR%\\Scripts\\python main.py"
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                bat ".\\%VENV_DIR%\\Scripts\\pip install pytest"
+                bat ".\\%VENV_DIR%\\Scripts\\pytest --junitxml=results.xml || exit 0"
+            }
+        }
+    }
+
+    post {
+        always {
+            junit 'results.xml'
+        }
+    }
+}
